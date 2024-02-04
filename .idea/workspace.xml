@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a8f70a51-0a25-434d-b008-5671dfdcdf87" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/HotelJournal.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Model/Database/people.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Model/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Model/cloudUpload.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Model/saveAndLoad.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Model/tableExport.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/createDialog.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/deleteDialog.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/editDialog.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/saveDialog.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Pages/calendarPage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/Threads/sumTableThread.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ViewModel/mainWindow.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Dialogs/createDialogUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Dialogs/deleteDialogUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Dialogs/editDialogUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Dialogs/saveDialogUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Pages/calendarUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Pages/tableUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/calendar.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/report.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/std.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/calendar.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/main.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/report.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/std.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/assets/icon96px.ico" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/assets/left-dark-arrow-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/assets/left-light-arrow-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/assets/right-dark-arrow-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/assets/right-light-arrow-50.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/assets/tab-background.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Views/mainUI.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/.venv/lib/python3.12/site-packages/PyQt6/QtCore.pyi" root0="SKIP_INSPECTION" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2boqU5yElG6ShNk4efZ9mDd6Xep" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.mainWindow.executor": "Run",
+    "Python.scratch.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/aklivtsov/PycharmProjects/HotelJournal/Model",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Python"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Model" />
+      <recent name="$PROJECT_DIR$/ViewModel" />
+      <recent name="$PROJECT_DIR$/ViewModel/Dialogs" />
+      <recent name="$PROJECT_DIR$/ViewModel/Pages" />
+      <recent name="$PROJECT_DIR$/ViewModel/Threads" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/Views" />
+      <recent name="$PROJECT_DIR$/Views/Pages" />
+      <recent name="$PROJECT_DIR$/Views/Dialogs" />
+      <recent name="$PROJECT_DIR$/ViewModel/Pages" />
+      <recent name="$PROJECT_DIR$/ViewModel/Dialogs" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="mainWindow" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="HotelJournal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ViewModel/mainWindow.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-5a2391486177-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.13763.11" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a8f70a51-0a25-434d-b008-5671dfdcdf87" name="Changes" comment="" />
+      <created>1706891791939</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1706891791939</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Views/Pages/tableUI.py</url>
+          <line>109</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
