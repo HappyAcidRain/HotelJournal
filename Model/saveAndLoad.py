@@ -1,6 +1,7 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QThread, QDate
 
+from collections import defaultdict
 import sqlite3
 
 
@@ -24,7 +25,7 @@ class CalendarRead(QThread):
         self.table_name = table_name
 
     @staticmethod
-    def get_tables():
+    def get_tables() -> list:
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
         cursor.execute("""SELECT name FROM sqlite_master WHERE type='table';""")
@@ -32,6 +33,8 @@ class CalendarRead(QThread):
         return table_list
 
     def run(self) -> None:
+        return
+
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
         cursor.execute(f"SELECT count(*) FROM {self.table_name}")
@@ -90,16 +93,15 @@ class CalendarSave(QThread):
         self.tableName = table_name
         self.table = table
 
-    def run(self) -> None:  # TODO: adjust db, add keys, etc.
-
-        cords_list = []
-        same_color_items = []
+    def run(self) -> None:
+        cords_dict = defaultdict(list)
+        notes_dict = {}
 
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
 
-        for column in range(self.table.columnCount()):
-            for row in range(self.table.rowCount()):
+        for row in range(self.table.rowCount()):
+            for column in range(self.table.columnCount()):
                 cell = self.table.item(row, column)
 
                 if cell:
@@ -108,17 +110,45 @@ class CalendarSave(QThread):
                     red, green, blue, _ = bg.color().getRgb()
 
                     color = f"{red}:{green}:{blue}"
-                    cell_cords = f"{row}:{column}"
+                    cell_cords = f"{row + 1}:{column + 1}"
 
-                    cords_list.append([cell_cords, color, note])
+                    cords_dict[color].append(cell_cords)
+                    notes_dict[color] = note
 
-        for cur_item in cords_list:
-            next_item = cords_list[cords_list.index(cur_item)+1]
+        keys = cords_dict.keys()
+        for key in keys:
+            cords_dict[key] = [f'{cords_dict[key][0]}-{cords_dict[key][-1]}']
+            cords_dict[key].append(notes_dict[key])
 
-            if cur_item[1] == next_item[1]:
-                same_color_items.append(f"{cur_item[0]}-{next_item[1]}")
+            cursor.execute(f"SELECT color FROM {self.tableName} WHERE color = ?", (key,))
+            check = cursor.fetchone()
+            if check is None:  # TODO: ghost data after editing, look to db for example
+
+                cursor.execute(f"SELECT date FROM {self.tableName} WHERE date = ?",
+                               (cords_dict[key][0],))
+                check = cursor.fetchone()
+
+                if check is not None:
+                    check = string_cleaner(check)
+
+                if check == cords_dict[key][0]:
+
+                    cursor.execute(f"UPDATE {self.tableName} SET color = ? WHERE date = ?",
+                                   (key, cords_dict[key][0]))
+
+                    cursor.execute(f"UPDATE {self.tableName}  SET notes = ? WHERE date = ?",
+                                   (cords_dict[key][1], cords_dict[key][0]))
+
+                    connect.commit()
+
+                else:
+                    cursor.execute(f"INSERT INTO {self.tableName}(color, date, notes) VALUES(?, ?, ?)",
+                                   (key, cords_dict[key][0], cords_dict[key][1]))
+                    connect.commit()
+
+
             else:
-                pass
+                self.s_data.emit('alr')
 
         connect.close()
         self.s_data.emit('cls')
