@@ -26,11 +26,11 @@ class CalendarPage(QMainWindow, calendarUI.Ui_MainWindow, QDialog,
         self.btn_del.clicked.connect(lambda: self.deleteDialog.show())
         self.btn_save.clicked.connect(self.save)
 
-        self.readThread = saveAndLoad.ReadThread()
+        self.readThread = saveAndLoad.CalendarRead()
         self.readThread.s_data.connect(self.write)
 
-        self.saveThread = saveAndLoad.SaveThread()
-        self.saveThread.s_update.connect(self.saving_dialog)
+        self.saveThread = saveAndLoad.CalendarSave()
+        self.saveThread.s_data.connect(self.saving_dialog)
         self.saveThread.finished.connect(lambda: self.s_saveFinished.emit(True))
 
         self.editDialog = editDialog.EditDialog()
@@ -70,7 +70,6 @@ class CalendarPage(QMainWindow, calendarUI.Ui_MainWindow, QDialog,
         self.saveDialog.setStyleSheet(style)
 
     def set_table(self):
-
         self.tw_table.setRowCount(12)
         self.tw_table.setColumnCount(31)
 
@@ -109,7 +108,6 @@ class CalendarPage(QMainWindow, calendarUI.Ui_MainWindow, QDialog,
     def save(self):
         self.saveDialog.show()
         self.saveDialog.set_range(self.tw_table.columnCount() * self.tw_table.rowCount())
-
         self.saveThread.set(self.tableName, self.tw_table)
         self.saveThread.start()
 
@@ -119,10 +117,11 @@ class CalendarPage(QMainWindow, calendarUI.Ui_MainWindow, QDialog,
 
     def write(self, row, column, red, green, blue, notes):
         self.tw_table.setItem(row, column, QTableWidgetItem())
+        if self.tw_table.item(row, column) is None:
+            return
 
         if red is not None:
             self.tw_table.item(row, column).setBackground(QtGui.QColor(red, green, blue))
-
         if notes is not None:
             self.tw_table.item(row, column).setToolTip(notes)
 

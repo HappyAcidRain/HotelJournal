@@ -1,5 +1,5 @@
 from PyQt6 import QtCore
-from PyQt6.QtCore import QThread
+from PyQt6.QtCore import QThread, QDate
 
 import sqlite3
 
@@ -11,9 +11,10 @@ def string_cleaner(str_temp) -> str:
     return clean_string
 
 
-class ReadThread(QThread):
+class CalendarRead(QThread):
     # row, column, color(r, g, b), note
     s_data = QtCore.pyqtSignal(int, int, int, int, int, str)
+    s_tables = QtCore.pyqtSignal(list)
 
     def __init__(self):
         QtCore.QThread.__init__(self)
@@ -21,6 +22,14 @@ class ReadThread(QThread):
 
     def set(self, table_name) -> None:
         self.table_name = table_name
+
+    @staticmethod
+    def get_tables():
+        connect = sqlite3.connect("Model/Database/people.db")
+        cursor = connect.cursor()
+        cursor.execute("""SELECT name FROM sqlite_master WHERE type='table';""")
+        table_list = cursor.fetchall()
+        return table_list
 
     def run(self) -> None:
         connect = sqlite3.connect("Model/Database/people.db")
@@ -35,47 +44,42 @@ class ReadThread(QThread):
                 # column
                 cursor.execute(f"SELECT day FROM {self.table_name} WHERE ROWID = ?", (index,))
                 column = cursor.fetchone()
+                if column is not None:
+                    column = int(string_cleaner(column))
 
-                if column is None:
-                    return
-
-                column = int(string_cleaner(column))
-
+                # row
                 cursor.execute(f"SELECT month FROM {self.table_name} WHERE ROWID = ?", (index,))
                 row = cursor.fetchone()
-                row = int(string_cleaner(row))
+                if row is not None:
+                    row = int(string_cleaner(row))
 
                 # notes
                 cursor.execute(f"SELECT notes FROM {self.table_name} WHERE ROWID = ?", (index,))
                 notes = cursor.fetchone()
-
-                if notes is None:  # check really it needs or not
-                    notes = None
-                else:
+                if notes is not None:
                     notes = string_cleaner(notes)
 
                 # color
                 cursor.execute(f"SELECT color FROM {self.table_name} WHERE ROWID = ?", (index,))
                 color = cursor.fetchone()
-
                 if color is None:
-                    red = None
-                    green = None
-                    blue = None
+                    red, green, blue = (None, None, None)
 
                 else:
                     color = string_cleaner(color)
-
                     color = color.split(":")
+
                     red = int(color[0])
                     green = int(color[1])
                     blue = int(color[2])
 
                 self.s_data.emit(row, column, red, green, blue, notes)
 
+        connect.close()
 
-class SaveThread(QThread):
-    s_update = QtCore.pyqtSignal(str)
+
+class CalendarSave(QThread):
+    s_data = QtCore.pyqtSignal(str)
 
     def __init__(self):
         QtCore.QThread.__init__(self)
@@ -86,7 +90,11 @@ class SaveThread(QThread):
         self.tableName = table_name
         self.table = table
 
-    def run(self) -> None:
+    def run(self) -> None:  # TODO: adjust db, add keys, etc.
+
+        cords_list = []
+        same_color_items = []
+
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
 
@@ -96,61 +104,28 @@ class SaveThread(QThread):
 
                 if cell:
                     bg = cell.background()
-                    note = cell.toolTip()
-
+                    note = str(cell.toolTip())
                     red, green, blue, _ = bg.color().getRgb()
+
                     color = f"{red}:{green}:{blue}"
+                    cell_cords = f"{row}:{column}"
 
-                    row_and_column = f"{row}:{column}"
+                    cords_list.append([cell_cords, color, note])
 
-                    cursor.execute(f"SELECT rowAndColumn FROM {self.tableName} WHERE rowAndColumn = ?",
-                                   (row_and_column,))
+        for cur_item in cords_list:
+            next_item = cords_list[cords_list.index(cur_item)+1]
 
-                    db_row_and_column = cursor.fetchone()
-
-                    if db_row_and_column is None:
-                        cursor.execute(f"""INSERT INTO {self.tableName}(rowAndColumn, notes, color, day, month)
-                                            VALUES(?, ?, ?, ?, ?);""",
-                                       (row_and_column, note, color, column, row))
-
-                        connect.commit()
-                        self.s_update.emit('upd')
-
-                    else:
-                        cursor.execute(f"UPDATE {self.tableName} SET notes = ? WHERE rowAndColumn = ?",
-                                       (note, row_and_column))
-
-                        cursor.execute(f"UPDATE {self.tableName} SET color = ? WHERE rowAndColumn = ?",
-                                       (color, row_and_column))
-
-                        cursor.execute(f"UPDATE {self.tableName} SET day = ? WHERE rowAndColumn = ?",
-                                       (column, row_and_column))
-
-                        cursor.execute(f"UPDATE {self.tableName} SET month = ? WHERE rowAndColumn = ?",
-                                       (row, row_and_column))
-
-                        connect.commit()
-                        self.s_update.emit('upd')
-
-                else:
-
-                    row_and_column = f"{row}:{column}"
-
-                    cursor.execute(f"SELECT rowAndColumn FROM {self.tableName} WHERE rowAndColumn = ?",
-                                   (row_and_column,))
-
-                    db_row_and_column = cursor.fetchone()
-
-                    if db_row_and_column is not None:
-                        cursor.execute(f"DELETE FROM {self.tableName} WHERE rowAndColumn = ?",
-                                       (row_and_column,))
+            if cur_item[1] == next_item[1]:
+                same_color_items.append(f"{cur_item[0]}-{next_item[1]}")
+            else:
+                pass
 
         connect.close()
-        self.s_update.emit('cls')
+        self.s_data.emit('cls')
 
 
-class SaveReportThread(QThread):
-    s_updPB = QtCore.pyqtSignal(str)
+class TableSave(QThread):
+    s_data = QtCore.pyqtSignal(str)
 
     def __init__(self):
         QtCore.QThread.__init__(self)
@@ -165,11 +140,11 @@ class SaveReportThread(QThread):
     def run(self) -> None:
         def standard_save(name_in_db):
             item = cell.text()
-            cursor.execute(f"UPDATE {self.tableName} SET {name_in_db} = ? WHERE date = ?",
-                           (item, self.date))
-
+            cursor.execute(
+                f"UPDATE {self.tableName} SET {name_in_db} = ? WHERE date = ?",
+                (item, self.date))
             connect.commit()
-            self.s_updPB.emit('upd')
+            self.s_data.emit('upd')
 
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
@@ -177,7 +152,6 @@ class SaveReportThread(QThread):
         for row in range(self.table.rowCount() - 2):
             for column in range(self.table.columnCount()):
                 cell = self.table.item(row, column)
-
                 if cell and row > 1:
                     match column:
 
@@ -190,7 +164,7 @@ class SaveReportThread(QThread):
                                 cursor.execute(f"INSERT INTO {self.tableName}(date) VALUES(?);", (self.date,))
 
                             connect.commit()
-                            self.s_updPB.emit('upd')
+                            self.s_data.emit('upd')
 
                         case 2:
                             standard_save('price')
@@ -217,14 +191,15 @@ class SaveReportThread(QThread):
                             standard_save('income')
 
         connect.close()
-        self.s_updPB.emit('cls')
+        self.s_data.emit('cls')
 
 
-class ReadReportThread(QThread):
-    s_readData = QtCore.pyqtSignal(int, int, str)
+class TableRead(QThread):
+    s_data = QtCore.pyqtSignal(int, int, str)
 
     def __init__(self):
         QtCore.QThread.__init__(self)
+        self.colorVariations = []
         self.tableName = None
         self.table = None
         self.date = None
@@ -233,48 +208,97 @@ class ReadReportThread(QThread):
         self.tableName = table_name
         self.table = table
 
-    def run(self) -> None:
-        def standard_read(name_in_db, row, column):
-            cursor.execute(f"SELECT {name_in_db} FROM {self.tableName} WHERE date = ?", (self.date,))
-            db_data = cursor.fetchone()
+    def insert_dates(self):
 
-            if db_data != (None,) and db_data is not None:
-                db_data = string_cleaner(db_data)
-                self.s_readData.emit(row, column, db_data)
+        cursor.execute(f"""SELECT month FROM {self.tableName} WHERE color = '{color}'""")
+        db_month = cursor.fetchall()
+        db_month.sort()
 
-        connect = sqlite3.connect("Model/Database/people.db")
-        cursor = connect.cursor()
+        index = 0
+        for item in db_month:
 
-        for row in range(self.table.rowCount() - 2):
-            for column in range(self.table.columnCount()):
-                cell = self.table.item(row, column)
+            month_temp = ""
+            for i in item:
+                month_temp += str(i)
+            month = int(month_temp)
 
-                if row > 1:
-                    match column:
+            db_month[index] = month
+            index += 1
 
-                        case 0:
-                            self.date = cell.text()
+        db_month = list(dict.fromkeys(db_month))
 
-                        case 2:
-                            standard_read('price', row, column)
+        day_list = []
 
-                        case 3:
-                            standard_read('sum', row, column)
+        for month in db_month:
+            cursor.execute(f"""SELECT day FROM {self.tableName} WHERE month = {month} AND color = '{color}'""")
+            db_day = cursor.fetchall()
 
-                        case 4:
-                            standard_read('rent', row, column)
+            index = 0
+            for item in db_day:
 
-                        case 5:
-                            standard_read('guest', row, column)
+                day_temp = ""
+                for i in item:
+                    day_temp += str(i)
+                day = int(day_temp) + 1
 
-                        case 6:
-                            standard_read('avito', row, column)
+                db_day[index] = day
+                index += 1
 
-                        case 7:
-                            standard_read('expense', row, column)
+            day_list.append(db_day)
 
-                        case 8:
-                            standard_read('indications', row, column)
+        min_day = day_list[0][0]  # FIX: IndexError: list index out of range
+        max_day = day_list[-1][-1]
 
-                        case 9:
-                            standard_read('income', row, column)
+        min_month = db_month[0] + 1
+        max_month = db_month[-1] + 1
+
+        return min_day, min_month, max_day, max_month
+
+
+def run(self) -> None:
+    def standard_read(name_in_db, row, column):
+        cursor.execute(f"SELECT {name_in_db} FROM {self.tableName} WHERE date = ?", (self.date,))
+        db_data = cursor.fetchone()
+
+        if db_data != (None,) and db_data is not None:
+            db_data = string_cleaner(db_data)
+            self.s_data.emit(row, column, db_data)
+
+    connect = sqlite3.connect("Model/Database/people.db")
+    cursor = connect.cursor()
+
+    for row in range(self.table.rowCount() - 2):
+        for column in range(self.table.columnCount()):
+            cell = self.table.item(row, column)
+
+            if row > 1:
+                match column:
+
+                    case 0:
+                        self.date = cell.text()
+
+                    case 2:
+                        standard_read('price', row, column)
+
+                    case 3:
+                        standard_read('sum', row, column)
+
+                    case 4:
+                        standard_read('rent', row, column)
+
+                    case 5:
+                        standard_read('guest', row, column)
+
+                    case 6:
+                        standard_read('avito', row, column)
+
+                    case 7:
+                        standard_read('expense', row, column)
+
+                    case 8:
+                        standard_read('indications', row, column)
+
+                    case 9:
+                        standard_read('income', row, column)
+
+    connect.close()

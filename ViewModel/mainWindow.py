@@ -3,17 +3,11 @@ from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 
-from Model import cloudUpload
-
+from Model import cloudUpload, saveAndLoad
 from Views import mainUI
+from ViewModel.Dialogs import deleteDialog, saveDialog, editDialog, createDialog
+from ViewModel.Pages import calendarPage, tablePage
 
-from ViewModel.Dialogs import deleteDialog
-from ViewModel.Dialogs import saveDialog
-from ViewModel.Dialogs import editDialog
-from ViewModel.Dialogs import createDialog
-
-from ViewModel.Pages import calendarPage
-from ViewModel.Pages import tablePage
 
 import sqlite3
 
@@ -22,12 +16,11 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon('assets/icon96px.ico'))
-        self.setWindowTitle("BusinessThing")
-        self.statusbar.showMessage("ver 1.3")
         self.resizeable()
         self.set_actions()
         self.fetch_tables()
+
+        self.tableRead = saveAndLoad.TableRead()
 
         self.deleteDialog = deleteDialog.DeleteDialog()
         self.saveDialog = saveDialog.SaveDialog()
@@ -40,17 +33,17 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
         self.calendarPage.s_saveFinished.connect(self.report_open)
         self.calendarPage.resizeable()
 
-        self.reportPage = tablePage.ReportPage()
-        self.reportPage.resizeable()
+        self.tablePage = tablePage.ReportPage()
+        self.tablePage.resizeable()
 
         self.theme = "Light"
         self.reportOpenAllow = False
         self.set_tab_bar(self.tb_main)
-        self.setTheme()
+        self.set_theme()
 
     def set_tab_bar(self, tab_bar):
         tab_bar.addTab(self.calendarPage, "Календарь")
-        tab_bar.addTab(self.reportPage, "Отчёт")
+        tab_bar.addTab(self.tablePage, "Отчёт")
 
         tab_bar.setTabIcon(0, QIcon("assets/left-dark-arrow-50.png"))  # placeholder
         tab_bar.setTabIcon(1, QIcon("assets/right-dark-arrow-50.png"))  # placeholder
@@ -72,13 +65,13 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
         self.themeAct = QAction('Сменить тему', self)
         self.m_settings.addAction(self.themeAct)
 
-        self.themeAct.triggered.connect(self.setTheme)
+        self.themeAct.triggered.connect(self.set_theme)
         self.saveAct.triggered.connect(self.page_save)
         self.load_act.triggered.connect(self.page_read)
         self.uploadAct.triggered.connect(lambda: cloudUpload.upload())
         self.createAct.triggered.connect(lambda: self.createDialog.show())
 
-    def setTheme(self):
+    def set_theme(self):
         if self.theme == "Light":
             with open('Views/Themes/lightDefault/main.css') as file:
                 style = file.read()
@@ -86,7 +79,7 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
 
             with open('Views/Themes/lightDefault/report.css') as file:
                 style = file.read()
-                self.reportPage.setStyleSheet(style)
+                self.tablePage.setStyleSheet(style)
 
             with open('Views/Themes/lightDefault/calendar.css') as file:
                 style = file.read()
@@ -106,7 +99,7 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
 
             with open('Views/Themes/darkDefault/report.css') as file:
                 style = file.read()
-                self.reportPage.setStyleSheet(style)
+                self.tablePage.setStyleSheet(style)
 
             with open('Views/Themes/darkDefault/calendar.css') as file:
                 style = file.read()
@@ -120,9 +113,9 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
             self.theme = "Light"
 
     def resizeable(self):
-        sizePolicy = QtWidgets.QSizePolicy(QSizePolicy.Policy.Expanding,
-                                           QSizePolicy.Policy.Expanding)
-        self.tb_main.setSizePolicy(sizePolicy)
+        size_policy = QtWidgets.QSizePolicy(QSizePolicy.Policy.Expanding,
+                                            QSizePolicy.Policy.Expanding)
+        self.tb_main.setSizePolicy(size_policy)
         self.setCentralWidget(self.tb_main)
 
     def page_save(self):
@@ -131,15 +124,14 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
             self.calendarPage.save()
 
         else:
-            self.reportPage.save()
+            self.tablePage.save()
 
     def page_read(self):
         page = self.tb_main.currentIndex()
         if page == 0:
             self.calendarPage.read()
-
         else:
-            self.reportPage.read()
+            self.tablePage.read()
 
     def fetch_tables(self):
 
@@ -151,38 +143,34 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
         def table_change(name):
             self.calendarPage.tableName = str(name)
 
-            # сброс таблицы
+            # table drop
             self.calendarPage.tw_table.setRowCount(0)
             self.calendarPage.tw_table.setColumnCount(0)
             self.calendarPage.set_table()
 
             self.calendarPage.read()
 
-        connect = sqlite3.connect("Model/Database/people.db")
-        cursor = connect.cursor()
+        table_list = saveAndLoad.CalendarRead.get_tables()
 
-        cursor.execute("""SELECT name FROM sqlite_master WHERE type='table';""")
-        tableList = cursor.fetchall()
+        index_count = 0
 
-        indexCount = 0
+        for item in table_list:
 
-        for item in tableList:
-
-            clearItem = ""
+            clear_item = ""
             for i in item:
-                clearItem += str(i)
+                clear_item += str(i)
 
-            tableList[indexCount] = clearItem
+            table_list[index_count] = clear_item
 
-            if '_' in clearItem:
-                indexCount += 1
+            if '_' in clear_item:
+                index_count += 1
 
             else:
-                make_act(f"{tableList[indexCount]}Act", tableList[indexCount])
+                make_act(f"{table_list[index_count]}Act", table_list[index_count])
                 self.m_file.addMenu(self.change_menu)
-                indexCount += 1
+                index_count += 1
 
-        indexCount = 0
+        index_count = 0
 
     def update_table_list(self):
         self.change_menu.clear()
@@ -195,10 +183,10 @@ class MainWindow(QMainWindow, mainUI.Ui_MainWindow, QDialog, QColor, QSize, QSiz
 
     def report_open(self, save_finished):
         calendar = self.calendarPage
-        report = self.reportPage
+        report = self.tablePage
 
         if self.reportOpenAllow and save_finished:
-            report.set(calendar.tw_table, calendar.tableName)
+            report.set(calendar.tableName, calendar.tw_table)
             report.start()
             self.reportOpenAllow = False
 

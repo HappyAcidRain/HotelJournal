@@ -5,49 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a8f70a51-0a25-434d-b008-5671dfdcdf87" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/HotelJournal.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Model/Database/people.db" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Model/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Model/cloudUpload.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Model/saveAndLoad.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Model/tableExport.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/createDialog.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/deleteDialog.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/editDialog.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Dialogs/saveDialog.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Pages/calendarPage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/Threads/sumTableThread.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ViewModel/mainWindow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Dialogs/createDialogUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Dialogs/deleteDialogUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Dialogs/editDialogUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Dialogs/saveDialogUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Pages/calendarUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Pages/tableUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/calendar.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/main.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/report.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/darkDefault/std.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/calendar.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/main.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/report.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/Themes/lightDefault/std.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/assets/icon96px.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/assets/left-dark-arrow-50.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/assets/left-light-arrow-50.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/assets/right-dark-arrow-50.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/assets/right-light-arrow-50.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/assets/tab-background.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Views/mainUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/export.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/HotelJournal.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/HotelJournal.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Model/Database/people.db" beforeDir="false" afterPath="$PROJECT_DIR$/Model/Database/people.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Model/saveAndLoad.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/saveAndLoad.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ViewModel/Pages/calendarPage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/Pages/calendarPage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ViewModel/mainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/mainWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Views/Pages/tableUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Views/Pages/tableUI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Views/mainUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/Views/mainUI.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,23 +46,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.mainWindow.executor": "Run",
-    "Python.scratch.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/aklivtsov/PycharmProjects/HotelJournal/Model",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.mainWindow.executor&quot;: &quot;Run&quot;,
+    &quot;Python.scratch.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/aklivtsov/PycharmProjects/HotelJournal/Model&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
-      "Python"
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
+      &quot;Python&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/Model" />
@@ -158,13 +126,13 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/Views/Pages/tableUI.py</url>
-          <line>109</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
 </project>

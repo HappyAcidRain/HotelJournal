@@ -3,6 +3,8 @@ from PyQt6.QtCore import QObject, QPropertyAnimation, QPoint, QEasingCurve, QTim
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QSizePolicy
 from PyQt6.QtWidgets import QTableWidgetItem, QHeaderView
 
+from ViewModel.Dialogs import saveDialog
+from ViewModel.Threads import sumTableThread
 
 class Animations:
     def __init__(self, frame):
@@ -51,21 +53,33 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1013, 495)
 
+        self.totalList = []
+        self.reportSum = sumTableThread.SumReportThread()
+        self.reportSum.s_sumData.connect(self.change_sum_row)
+
+        self.saveDialog = saveDialog.SaveDialog()
+
+        self.reportSum = sumTableThread.SumReportThread()
+        self.reportSum.s_sumData.connect(self.change_sum_row)
+
+        self.saveDialog = saveDialog.SaveDialog()
+
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.tw_reportTable = QtWidgets.QTableWidget(parent=self.centralwidget)
         self.tw_reportTable.setGeometry(QtCore.QRect(0, 0, 1011, 451))
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tw_reportTable.sizePolicy().hasHeightForWidth())
+        size_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        size_policy.setHorizontalStretch(0)
+        size_policy.setVerticalStretch(0)
+        size_policy.setHeightForWidth(self.tw_reportTable.sizePolicy().hasHeightForWidth())
 
-        self.tw_reportTable.setSizePolicy(sizePolicy)
+        self.tw_reportTable.setSizePolicy(size_policy)
         self.tw_reportTable.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.tw_reportTable.setObjectName("tw_reportTable")
         self.tw_reportTable.setColumnCount(0)
         self.tw_reportTable.setRowCount(0)
+        self.tw_reportTable.cellChanged.connect(self.calculate)
 
         self.btn_save = QtWidgets.QPushButton(parent=self.centralwidget)
         self.btn_save.setGeometry(QtCore.QRect(890, 460, 121, 31))
@@ -94,6 +108,60 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.set_table()
+
+    def set_sum_row(self):
+        if self.tw_reportTable.item(self.tw_reportTable.rowCount() - 1, 0) is not None:
+
+            last_row = self.tw_reportTable.rowCount() + 1
+            self.tw_reportTable.setRowCount(self.tw_reportTable.rowCount() + 2)
+
+            self.write(last_row, 0, "Сумма:")
+            self.tw_reportTable.item(last_row, 0).setBackground(QtGui.QColor(187, 255, 169))
+
+            for i in range(10):
+                if i != 0:
+                    self.tw_reportTable.setItem(last_row, i, QTableWidgetItem())
+                    self.tw_reportTable.item(last_row, i).setBackground(QtGui.QColor(187, 255, 169))
+
+    def calculate(self, row, column):
+        if column == 2:
+            entered = self.tw_reportTable.currentItem()
+            if entered and entered.text().isdigit():
+                days = self.tw_reportTable.item(row, 1).text()
+                self.write(row, 3, str(int(entered.text()) * int(days)))
+
+        elif column == 4 or 5 or 6 or 9:
+            self.reportSum.set(self.tw_reportTable)
+            self.reportSum.start()
+
+    def change_sum_row(self, total):
+        last_row = self.tw_reportTable.rowCount() - 1
+        alignment = QtCore.Qt.AlignmentFlag.AlignCenter
+        self.totalList.append(total)
+
+        if len(self.totalList) == 4:
+            column = 4
+            for item in self.totalList:
+                cell = self.tw_reportTable.item(last_row, column)
+                if cell is None:
+                    return
+
+                cell.setText(str(item))
+                cell.setTextAlignment(alignment)
+                if column < 6:
+                    column += 1
+                else:
+                    column = 9
+
+            self.totalList.clear()
+
+    def save_dialog(self, msg):
+        if msg == 'upd':
+            self.saveDialog.add()
+        else:
+            self.saveDialog.close()
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -101,25 +169,7 @@ class Ui_MainWindow(object):
         self.btn_export.setText(_translate("MainWindow", "Экспорт"))
         self.lbl_msg.setText(_translate("MainWindow", "Таблица экспортирована!"))
 
-    def setSumRow(self):
-        if self.tw_reportTable.item(self.tw_reportTable.rowCount() - 1, 0) != None:
-
-            lastRow = self.tw_reportTable.rowCount() + 1
-            self.tw_reportTable.setRowCount(self.tw_reportTable.rowCount() + 2)
-
-            self.write(lastRow, 0, "Сумма:")  # ! ????
-            self.tw_reportTable.item(lastRow, 0).setBackground(QtGui.QColor(187, 255, 169))
-
-            for i in range(10):
-                if i != 0:
-                    self.tw_reportTable.setItem(lastRow, i, QTableWidgetItem())
-                    self.tw_reportTable.item(lastRow, i).setBackground(QtGui.QColor(187, 255, 169))
-
-    def setTable(self):
-        def color(row, column, red, green, blue):
-            cell = self.tw_reportTable.item(row, column)
-            cell.setBackground(QtGui.QColor(red, green, blue))
-
+    def set_table(self):
         self.tw_reportTable.verticalHeader().setVisible(False)
         self.tw_reportTable.horizontalHeader().setVisible(False)
         self.tw_reportTable.setColumnCount(10)
@@ -128,10 +178,9 @@ class Ui_MainWindow(object):
         for i in range(4):
             self.tw_reportTable.setSpan(0, i, 2, 1)
         self.tw_reportTable.setSpan(0, 4, 1, 6)
-
         names = ('Период аренды', 'Кол-во суток', 'Стоимость',
-                 'Сумма', 'Оплата', 'Бронь', 'Гость', 'Авито', 'Расход',
-                 'Показания', 'Доход')
+                 'Сумма', 'Оплата', 'Бронь', 'Гость', 'Авито',
+                 'Расход','Показания', 'Доход')
 
         row = 0
         column = 0
@@ -152,9 +201,61 @@ class Ui_MainWindow(object):
             column += 1
             i += 1
 
-        horHeader = self.tw_reportTable.horizontalHeader()
+        hor_header = self.tw_reportTable.horizontalHeader()
         for i in range(self.tw_reportTable.columnCount()):
-            horHeader.setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
+            hor_header.setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
+
+    def write(self, row, column, text):
+        alignment = QtCore.Qt.AlignmentFlag.AlignCenter
+        self.tw_reportTable.setItem(row, column, QTableWidgetItem())
+        self.tw_reportTable.item(row, column).setText(text)
+        self.tw_reportTable.item(row, column).setTextAlignment(alignment)
+        self.color(row, column)
+
+    def color(self, row, column):
+
+        colors = ((191, 255, 172), (255, 219, 224), (249, 211, 249),
+                  (249, 211, 249), (243, 243, 155), (255, 237, 178),
+                  (202, 199, 248))
+
+        match column:
+
+            case 4:
+                if row == 0:
+                    red, green, blue = colors[0]
+                    cell = self.tw_reportTable.item(row, column)
+                    cell.setBackground(QtGui.QColor(red, green, blue))
+
+                else:
+                    red, green, blue = colors[1]
+                    cell = self.tw_reportTable.item(row, column)
+                    cell.setBackground(QtGui.QColor(red, green, blue))
+
+            case 5:
+                red, green, blue = colors[2]
+                cell = self.tw_reportTable.item(row, column)
+                cell.setBackground(QtGui.QColor(red, green, blue))
+
+            case 6:
+                red, green, blue = colors[3]
+                cell = self.tw_reportTable.item(row, column)
+
+                cell.setBackground(QtGui.QColor(red, green, blue))
+
+            case 7:
+                red, green, blue = colors[4]
+                cell = self.tw_reportTable.item(row, column)
+                cell.setBackground(QtGui.QColor(red, green, blue))
+
+            case 8:
+                red, green, blue = colors[5]
+                cell = self.tw_reportTable.item(row, column)
+                cell.setBackground(QtGui.QColor(red, green, blue))
+
+            case 9:
+                red, green, blue = colors[6]
+                cell = self.tw_reportTable.item(row, column)
+                cell.setBackground(QtGui.QColor(red, green, blue))
 
     def resizeable(self):
         verLayout = QVBoxLayout()

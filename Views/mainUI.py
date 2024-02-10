@@ -2,7 +2,10 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
+
     def setupUi(self, MainWindow):
+        MainWindow.setWindowIcon(QtGui.QIcon('assets/icon96px.ico'))
+        MainWindow.setWindowTitle("Hotel Journal")
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
         
@@ -23,6 +26,7 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
+        self.statusbar.showMessage("ver 2.0")
         MainWindow.setStatusBar(self.statusbar)
         self.menubar.addAction(self.m_file.menuAction())
         self.menubar.addAction(self.m_settings.menuAction())
