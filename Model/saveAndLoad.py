@@ -130,22 +130,69 @@ class CalendarSave(QThread):
 
                 if check is not None:
                     check = string_cleaner(check)
+                    dates = check.split("-")
 
-                if check == cords_dict[key][0]:
+                    start_month, start_day = dates[0].split(":")
+                    end_month, end_day = dates[1].split(":")
 
-                    cursor.execute(f"UPDATE {self.tableName} SET color = ? WHERE date = ?",
+                    print(f"{start_day} of {start_month} - {end_day} of {end_month}")
+
+                    is_count = True
+                    dates_list = []
+
+                    start_day = int(start_day)
+                    start_month = int(start_month)
+                    end_day = int(end_day)
+                    end_month = int(end_month)
+
+                    day = int(start_day)
+                    month = int(start_month)
+
+                    while is_count:
+                        if start_month != 2 and month != 2:
+                            if day <= 31:
+                                day += 1
+                                if month <= end_month and day <= end_day:
+                                    dates_list.append(f"{month}:{day}")
+                            if day > 31:
+                                day = 1
+                                month += 1
+                                if month <= end_month and day <= end_day:
+                                    dates_list.append(f"{month}:{day}")
+
+                        elif month == end_month and day == end_day:
+                            is_count = False
+
+                        else:
+                            if day <= 28:
+                                day += 1
+                                if month <= end_month and day <= end_day:
+                                    dates_list.append(f"{month}:{day}")
+                            if day > 28:
+                                day = 1
+                                month += 1
+                                if month <= end_month and day <= end_day:
+                                    dates_list.append(f"{month}:{day}")
+
+                    print(dates_list)
+
+                    """
+                    if check == cords_dict[key][0]:
+
+                        cursor.execute(f"UPDATE {self.tableName} SET color = ? WHERE date = ?",
                                    (key, cords_dict[key][0]))
 
-                    cursor.execute(f"UPDATE {self.tableName}  SET notes = ? WHERE date = ?",
+                        cursor.execute(f"UPDATE {self.tableName}  SET notes = ? WHERE date = ?",
                                    (cords_dict[key][1], cords_dict[key][0]))
 
-                    connect.commit()
+                        connect.commit()
 
-                else:
-                    cursor.execute(f"INSERT INTO {self.tableName}(color, date, notes) VALUES(?, ?, ?)",
+                    else:
+                        cursor.execute(f"INSERT INTO {self.tableName}(color, date, notes) VALUES(?, ?, ?)",
                                    (key, cords_dict[key][0], cords_dict[key][1]))
-                    connect.commit()
+                        connect.commit()
 
+                        """
 
             else:
                 self.s_data.emit('alr')
