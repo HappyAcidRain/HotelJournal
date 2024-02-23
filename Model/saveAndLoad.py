@@ -1,5 +1,6 @@
 from PyQt6 import QtCore
 from PyQt6.QtCore import QThread, QDate
+from Model import datesExpand
 
 from collections import defaultdict
 import sqlite3
@@ -122,77 +123,31 @@ class CalendarSave(QThread):
 
             cursor.execute(f"SELECT color FROM {self.tableName} WHERE color = ?", (key,))
             check = cursor.fetchone()
-            if check is None:  # TODO: ghost data after editing, look to db for example
 
+            if check is None:
                 cursor.execute(f"SELECT date FROM {self.tableName} WHERE date = ?",
                                (cords_dict[key][0],))
                 check = cursor.fetchone()
 
-                if check is not None:
+                if check is None:
+                    cursor.execute(
+                        f"INSERT INTO {self.tableName}(color, date, notes) VALUES(?, ?, ?)",
+                        (key, cords_dict[key][0], cords_dict[key][1]))
+                    connect.commit()
+
+                else:
                     check = string_cleaner(check)
-                    dates = check.split("-")
+                    dates_list = datesExpand.expand_dates(check)
 
-                    start_month, start_day = dates[0].split(":")
-                    end_month, end_day = dates[1].split(":")
+                    if cords_dict[key][0] in dates_list:
+                        cursor.execute(
+                            f"UPDATE {self.tableName} SET color = ? WHERE date = ?",
+                            (key, cords_dict[key][0]))
 
-                    print(f"{start_day} of {start_month} - {end_day} of {end_month}")
-
-                    is_count = True
-                    dates_list = []
-
-                    start_day = int(start_day)
-                    start_month = int(start_month)
-                    end_day = int(end_day)
-                    end_month = int(end_month)
-
-                    day = int(start_day)
-                    month = int(start_month)
-
-                    while is_count:
-                        if start_month != 2 and month != 2:
-                            if day <= 31:
-                                day += 1
-                                if month <= end_month and day <= end_day:
-                                    dates_list.append(f"{month}:{day}")
-                            if day > 31:
-                                day = 1
-                                month += 1
-                                if month <= end_month and day <= end_day:
-                                    dates_list.append(f"{month}:{day}")
-
-                        elif month == end_month and day == end_day:
-                            is_count = False
-
-                        else:
-                            if day <= 28:
-                                day += 1
-                                if month <= end_month and day <= end_day:
-                                    dates_list.append(f"{month}:{day}")
-                            if day > 28:
-                                day = 1
-                                month += 1
-                                if month <= end_month and day <= end_day:
-                                    dates_list.append(f"{month}:{day}")
-
-                    print(dates_list)
-
-                    """
-                    if check == cords_dict[key][0]:
-
-                        cursor.execute(f"UPDATE {self.tableName} SET color = ? WHERE date = ?",
-                                   (key, cords_dict[key][0]))
-
-                        cursor.execute(f"UPDATE {self.tableName}  SET notes = ? WHERE date = ?",
-                                   (cords_dict[key][1], cords_dict[key][0]))
-
+                        cursor.execute(
+                            f"UPDATE {self.tableName}  SET notes = ? WHERE date = ?",
+                            (cords_dict[key][1], cords_dict[key][0]))
                         connect.commit()
-
-                    else:
-                        cursor.execute(f"INSERT INTO {self.tableName}(color, date, notes) VALUES(?, ?, ?)",
-                                   (key, cords_dict[key][0], cords_dict[key][1]))
-                        connect.commit()
-
-                        """
 
             else:
                 self.s_data.emit('alr')
