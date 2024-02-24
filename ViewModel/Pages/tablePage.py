@@ -1,22 +1,17 @@
-from PyQt6 import QtWidgets, QtGui, QtCore
 from PyQt6.QtCore import *
 from PyQt6.QtWidgets import *
-from PyQt6.QtGui import *
 
 from Views.Pages import tableUI
-from ViewModel.Threads import sumTableThread
-from ViewModel.Dialogs import saveDialog
-
 from Model import saveAndLoad
 from Model import tableExport
-
-import sqlite3
 
 
 class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
     def __init__(self):
         super(ReportPage, self).__init__()
         self.setupUi(self)
+        self.calTable = None
+        self.table_name = None
 
         self.btn_save.clicked.connect(self.save)
         self.btn_export.clicked.connect(self.export)
@@ -39,14 +34,12 @@ class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
         self.calTable = cal_table
 
         self.set_table()
-        self.insert_dates()
+        self.insert_dates_and_days()
         self.set_sum_row()
         self.read()
 
     def insert_dates_and_days(self):
-
-        min_day, min_month, max_day, max_month = [None, None, None, None]  # placeholder
-        # insert dates in table
+        min_day, min_month, max_day, max_month = self.reportRead.insert_dates()
 
         if self.tw_reportTable.rowCount() - 1 == 1:
             self.tw_reportTable.setRowCount(3)
@@ -60,7 +53,6 @@ class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
         self.write(row, 0, text)
 
         # insert days in table
-
         cur_year = QDate().currentDate().year()
         min_date = QDate(cur_year, min_month, min_day)
         max_date = QDate(cur_year, max_month, max_day)
@@ -70,7 +62,6 @@ class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
             self.write(row, 1, '1')
         else:
             self.write(row, 1, days)
-
 
     def save(self):
         self.saveDialog.set_range(self.tw_reportTable.rowCount() * self.tw_reportTable.columnCount())

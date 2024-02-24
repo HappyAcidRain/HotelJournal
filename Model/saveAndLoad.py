@@ -33,51 +33,58 @@ class CalendarRead(QThread):
         table_list = cursor.fetchall()
         return table_list
 
-    def run(self) -> None:
-        return
-
+    def run(self):
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
         cursor.execute(f"SELECT count(*) FROM {self.table_name}")
         count = cursor.fetchone()
         count = int(string_cleaner(count))
 
-        for index in range(count + 1):
-            if index != 0:
+        for index in range(1, count + 1):
 
-                # column
-                cursor.execute(f"SELECT day FROM {self.table_name} WHERE ROWID = ?", (index,))
-                column = cursor.fetchone()
-                if column is not None:
-                    column = int(string_cleaner(column))
+            cursor.execute(f"SELECT startDate FROM {self.table_name} WHERE ROWID = ?", (index,))
+            start_date = cursor.fetchone()
+            if start_date is not None:
+                start_date = string_cleaner(start_date)
 
-                # row
-                cursor.execute(f"SELECT month FROM {self.table_name} WHERE ROWID = ?", (index,))
-                row = cursor.fetchone()
-                if row is not None:
-                    row = int(string_cleaner(row))
+            cursor.execute(f"SELECT endDate FROM {self.table_name} WHERE ROWID = ?", (index,))
+            end_date = cursor.fetchone()
+            if end_date is not None:
+                end_date = string_cleaner(end_date)
 
-                # notes
-                cursor.execute(f"SELECT notes FROM {self.table_name} WHERE ROWID = ?", (index,))
-                notes = cursor.fetchone()
-                if notes is not None:
-                    notes = string_cleaner(notes)
+            cursor.execute(f"SELECT notes FROM {self.table_name} WHERE ROWID = ?", (index,))
+            notes = cursor.fetchone()
+            if notes is not None:
+                notes = string_cleaner(notes)
 
-                # color
-                cursor.execute(f"SELECT color FROM {self.table_name} WHERE ROWID = ?", (index,))
-                color = cursor.fetchone()
-                if color is None:
-                    red, green, blue = (None, None, None)
+            cursor.execute(f"SELECT color FROM {self.table_name} WHERE ROWID = ?", (index,))
+            color = cursor.fetchone()
+            if color is None:
+                red, green, blue = (None, None, None)
 
-                else:
-                    color = string_cleaner(color)
-                    color = color.split(":")
+            else:
+                color = string_cleaner(color)
+                color = color.split(":")
 
-                    red = int(color[0])
-                    green = int(color[1])
-                    blue = int(color[2])
+                red = int(color[0])
+                green = int(color[1])
+                blue = int(color[2])
 
-                self.s_data.emit(row, column, red, green, blue, notes)
+            if start_date is not None and end_date is not None:
+
+                start_month, start_day = start_date.split(":")
+                end_month, end_day = end_date.split(":")
+
+                start = f"{start_month}:{start_day}"
+                end = f"{end_month}:{start_day}"
+
+                dates_list = datesExpand.expand_dates(f"{start}-{end}")
+
+                for date in dates_list:
+                    column, row = date.split(':')
+                    print(row, column, red, green, blue, notes)
+
+                    self.s_data.emit(row, column, red, green, blue, notes)  # TODO: resolve why it not writing data
 
         connect.close()
 
@@ -94,7 +101,7 @@ class CalendarSave(QThread):
         self.tableName = table_name
         self.table = table
 
-    def run(self) -> None:
+    def run(self):
         cords_dict = defaultdict(list)
         notes_dict = {}
 
@@ -118,36 +125,63 @@ class CalendarSave(QThread):
 
         keys = cords_dict.keys()
         for key in keys:
-            cords_dict[key] = [f'{cords_dict[key][0]}-{cords_dict[key][-1]}']
+            end_date = cords_dict[key][-1]
+            start_date = cords_dict[key][0]
+            cords_dict[key] = list()
+
+            cords_dict[key].append(start_date)
+            cords_dict[key].append(end_date)
             cords_dict[key].append(notes_dict[key])
+            # now cords_dist looks like this: [key(color):[start_date, end_date, notes]]
 
             cursor.execute(f"SELECT color FROM {self.tableName} WHERE color = ?", (key,))
             check = cursor.fetchone()
 
             if check is None:
-                cursor.execute(f"SELECT date FROM {self.tableName} WHERE date = ?",
-                               (cords_dict[key][0],))
-                check = cursor.fetchone()
+                cursor.execute(f"""SELECT startDate, endDate FROM {self.tableName} WHERE ? 
+                                    BETWEEN startDate and endDate OR ? == startDate OR ? == endDate""",
+                               (cords_dict[key][0], cords_dict[key][0], cords_dict[key][0],))
+                check = cursor.fetchall()
+                print(check)
 
-                if check is None:
+                if not check:
                     cursor.execute(
-                        f"INSERT INTO {self.tableName}(color, date, notes) VALUES(?, ?, ?)",
-                        (key, cords_dict[key][0], cords_dict[key][1]))
+                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                        (key, cords_dict[key][0], cords_dict[key][1], cords_dict[key][2]))
                     connect.commit()
 
                 else:
-                    check = string_cleaner(check)
-                    dates_list = datesExpand.expand_dates(check)
+                    # clear layering intersections -------------------------------
 
-                    if cords_dict[key][0] in dates_list:
-                        cursor.execute(
-                            f"UPDATE {self.tableName} SET color = ? WHERE date = ?",
-                            (key, cords_dict[key][0]))
-
-                        cursor.execute(
-                            f"UPDATE {self.tableName}  SET notes = ? WHERE date = ?",
-                            (cords_dict[key][1], cords_dict[key][0]))
+                    date_list = str(cords_dict[key][0] + '-' + cords_dict[key][1])
+                    date_list = datesExpand.expand_dates(date_list)
+                    for date in date_list:
+                        cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ? ",
+                                       (date,))
                         connect.commit()
+
+                    # resolve leading intersections -------------------------------
+
+                    check_date = f'{check[0][0]}-{check[0][1]}'
+                    check_date = datesExpand.expand_dates(check_date)
+                    print(check_date)
+
+                    if cords_dict[key][0] in check_date:
+                        new_end_month, new_end_day = cords_dict[key][0].split(':')
+                        new_end_date = new_end_month + ':' + str(int(new_end_day) - 1)
+
+                        cursor.execute(
+                            f"UPDATE {self.tableName} SET endDate = ? WHERE startDate = ?",
+                            (str(new_end_date), check[0][0]))
+
+                        cursor.execute(
+                            f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                            (key, cords_dict[key][0], cords_dict[key][1], cords_dict[key][2]))
+
+                        connect.commit()
+
+                        # resolve rear intersections -------------------------------
+                        # TODO: need to think
 
             else:
                 self.s_data.emit('alr')
@@ -241,6 +275,8 @@ class TableRead(QThread):
         self.table = table
 
     def insert_dates(self):
+        connect = sqlite3.connect("Model/Database/people.db")
+        cursor = connect.cursor()
 
         cursor.execute(f"""SELECT month FROM {self.tableName} WHERE color = '{color}'""")
         db_month = cursor.fetchall()
@@ -286,51 +322,50 @@ class TableRead(QThread):
 
         return min_day, min_month, max_day, max_month
 
+    def run(self):
+        def standard_read(name_in_db, row, column):
+            cursor.execute(f"SELECT {name_in_db} FROM {self.tableName} WHERE date = ?", (self.date,))
+            db_data = cursor.fetchone()
 
-def run(self) -> None:
-    def standard_read(name_in_db, row, column):
-        cursor.execute(f"SELECT {name_in_db} FROM {self.tableName} WHERE date = ?", (self.date,))
-        db_data = cursor.fetchone()
+            if db_data != (None,) and db_data is not None:
+                db_data = string_cleaner(db_data)
+                self.s_data.emit(row, column, db_data)
 
-        if db_data != (None,) and db_data is not None:
-            db_data = string_cleaner(db_data)
-            self.s_data.emit(row, column, db_data)
+        connect = sqlite3.connect("Model/Database/people.db")
+        cursor = connect.cursor()
 
-    connect = sqlite3.connect("Model/Database/people.db")
-    cursor = connect.cursor()
+        for row in range(self.table.rowCount() - 2):
+            for column in range(self.table.columnCount()):
+                cell = self.table.item(row, column)
 
-    for row in range(self.table.rowCount() - 2):
-        for column in range(self.table.columnCount()):
-            cell = self.table.item(row, column)
+                if row > 1:
+                    match column:
 
-            if row > 1:
-                match column:
+                        case 0:
+                            self.date = cell.text()
 
-                    case 0:
-                        self.date = cell.text()
+                        case 2:
+                            standard_read('price', row, column)
 
-                    case 2:
-                        standard_read('price', row, column)
+                        case 3:
+                            standard_read('sum', row, column)
 
-                    case 3:
-                        standard_read('sum', row, column)
+                        case 4:
+                            standard_read('rent', row, column)
 
-                    case 4:
-                        standard_read('rent', row, column)
+                        case 5:
+                            standard_read('guest', row, column)
 
-                    case 5:
-                        standard_read('guest', row, column)
+                        case 6:
+                            standard_read('avito', row, column)
 
-                    case 6:
-                        standard_read('avito', row, column)
+                        case 7:
+                            standard_read('expense', row, column)
 
-                    case 7:
-                        standard_read('expense', row, column)
+                        case 8:
+                            standard_read('indications', row, column)
 
-                    case 8:
-                        standard_read('indications', row, column)
+                        case 9:
+                            standard_read('income', row, column)
 
-                    case 9:
-                        standard_read('income', row, column)
-
-    connect.close()
+        connect.close()

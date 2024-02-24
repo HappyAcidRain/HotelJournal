@@ -31,9 +31,10 @@ class CreateDialog(QDialog, createDialogUI.Ui_Dialog, QSize):
 
             try:
                 cursor.execute(f"""CREATE TABLE {name} (
-                        date         TEXT    UNIQUE,
-                        notes        TEXT,
-                        color        TEXT
+                        startDate TEXT,
+                        endDate   TEXT,
+                        notes     TEXT,
+                        color     TEXT
                     );""")
 
                 cursor.execute(f"""CREATE TABLE {report_name} (

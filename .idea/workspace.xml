@@ -5,11 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a8f70a51-0a25-434d-b008-5671dfdcdf87" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Model/datesExpand.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Model/Database/people.db" beforeDir="false" afterPath="$PROJECT_DIR$/Model/Database/people.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Model/datesExpand.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/datesExpand.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Model/saveAndLoad.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/saveAndLoad.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ViewModel/Dialogs/createDialog.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/Dialogs/createDialog.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/~$export.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
