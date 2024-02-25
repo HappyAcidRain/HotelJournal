@@ -125,8 +125,9 @@ class CalendarSave(QThread):
 
         keys = cords_dict.keys()
         for key in keys:
-            end_date = cords_dict[key][-1]
             start_date = cords_dict[key][0]
+            end_date = cords_dict[key][-1]
+
             cords_dict[key] = list()
 
             cords_dict[key].append(start_date)
@@ -134,54 +135,88 @@ class CalendarSave(QThread):
             cords_dict[key].append(notes_dict[key])
             # now cords_dist looks like this: [key(color):[start_date, end_date, notes]]
 
+            start_date = cords_dict[key][0]
+            end_date = cords_dict[key][1]
+            notes = cords_dict[key][2]
+
             cursor.execute(f"SELECT color FROM {self.tableName} WHERE color = ?", (key,))
             check = cursor.fetchone()
 
             if check is None:
-                cursor.execute(f"""SELECT startDate, endDate FROM {self.tableName} WHERE ? 
-                                    BETWEEN startDate and endDate OR ? == startDate OR ? == endDate""",
-                               (cords_dict[key][0], cords_dict[key][0], cords_dict[key][0],))
+                cursor.execute(f"""SELECT startDate, endDate, color FROM {self.tableName} """)
                 check = cursor.fetchall()
-                print(check)
 
-                if not check:
+                new_write = []
+                lead_intersection = []
+                rear_intersection = []
+                overlaying_intersections = False
+
+                # WARNING: intersections are determined from old entry !!!
+
+                for date in check:
+                    dates = datesExpand.expand_dates(f'{date[0]}-{date[1]}')
+
+                    if (start_date not in dates) and (end_date not in dates):
+                        new_write.append(date)
+
+                    elif (start_date in dates) and (end_date not in dates):
+                        lead_intersection.append(date)
+
+                    elif (start_date not in dates) and (end_date in dates):
+                        rear_intersection.append(date)
+
+                    else:
+                        overlaying_intersections = True # TODO: need to separate from lead
+
+                if lead_intersection:
+                    print("its lead")
+                    new_start_month, new_start_day = start_date.split(':')
+                    new_start_date = f'{new_start_month}:{int(new_start_day) - 1}'
+
                     cursor.execute(
-                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
-                        (key, cords_dict[key][0], cords_dict[key][1], cords_dict[key][2]))
+                        f"UPDATE {self.tableName} SET endDate = ? WHERE color = ?",
+                        (str(new_start_date), lead_intersection[0][2]))
                     connect.commit()
 
-                else:
-                    # clear layering intersections -------------------------------
+                    cursor.execute(
+                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                        (key, start_date, end_date, notes))
+                    connect.commit()
 
-                    date_list = str(cords_dict[key][0] + '-' + cords_dict[key][1])
-                    date_list = datesExpand.expand_dates(date_list)
-                    for date in date_list:
-                        cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ? ",
+                elif rear_intersection:
+                    print("its rear")
+                    new_end_month, new_end_day = end_date.split(':')
+                    new_end_date = f'{new_end_month}:{int(new_end_day) + 1}'
+
+                    cursor.execute(
+                        f"UPDATE {self.tableName} SET startDate = ? WHERE color = ?",
+                        (str(new_end_date), rear_intersection[0][2]))
+                    connect.commit()
+
+                    cursor.execute(
+                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                        (key, start_date, end_date, notes))
+                    connect.commit()
+
+                elif overlaying_intersections:
+                    dates = datesExpand.expand_dates(f'{start_date}-{end_date}')
+                    for date in dates:
+                        cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ?",
                                        (date,))
                         connect.commit()
 
-                    # resolve leading intersections -------------------------------
+                    cursor.execute(
+                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                        (key, start_date, end_date, notes))
+                    connect.commit()
 
-                    check_date = f'{check[0][0]}-{check[0][1]}'
-                    check_date = datesExpand.expand_dates(check_date)
-                    print(check_date)
+                elif new_write:
+                    print("its new")
+                    cursor.execute(
+                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                        (key, start_date, end_date, notes))
+                    connect.commit()
 
-                    if cords_dict[key][0] in check_date:
-                        new_end_month, new_end_day = cords_dict[key][0].split(':')
-                        new_end_date = new_end_month + ':' + str(int(new_end_day) - 1)
-
-                        cursor.execute(
-                            f"UPDATE {self.tableName} SET endDate = ? WHERE startDate = ?",
-                            (str(new_end_date), check[0][0]))
-
-                        cursor.execute(
-                            f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
-                            (key, cords_dict[key][0], cords_dict[key][1], cords_dict[key][2]))
-
-                        connect.commit()
-
-                        # resolve rear intersections -------------------------------
-                        # TODO: need to think
 
             else:
                 self.s_data.emit('alr')

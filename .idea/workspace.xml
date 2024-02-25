@@ -5,14 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a8f70a51-0a25-434d-b008-5671dfdcdf87" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Model/Database/people.db" beforeDir="false" afterPath="$PROJECT_DIR$/Model/Database/people.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Model/datesExpand.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/datesExpand.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Model/saveAndLoad.py" beforeDir="false" afterPath="$PROJECT_DIR$/Model/saveAndLoad.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ViewModel/Dialogs/createDialog.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/Dialogs/createDialog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" beforeDir="false" afterPath="$PROJECT_DIR$/ViewModel/Pages/tablePage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/~$export.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +119,15 @@
       <option name="project" value="LOCAL" />
       <updated>1707606087147</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="new save system, need to clear rear intersections">
+      <option name="closed" value="true" />
+      <created>1708817751779</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1708817751779</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -141,7 +144,8 @@
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="new save system, need to debug" />
-    <option name="LAST_COMMIT_MESSAGE" value="new save system, need to debug" />
+    <MESSAGE value="new save system, need to clear rear intersections" />
+    <option name="LAST_COMMIT_MESSAGE" value="new save system, need to clear rear intersections" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
