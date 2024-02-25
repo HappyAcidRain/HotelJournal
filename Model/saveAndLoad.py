@@ -141,6 +141,7 @@ class CalendarSave(QThread):
 
             cursor.execute(f"SELECT color FROM {self.tableName} WHERE color = ?", (key,))
             check = cursor.fetchone()
+            c = 0
 
             if check is None:
                 cursor.execute(f"""SELECT startDate, endDate, color FROM {self.tableName} """)
@@ -150,6 +151,12 @@ class CalendarSave(QThread):
                 lead_intersection = []
                 rear_intersection = []
                 overlaying_intersections = False
+
+                db_dict = {}
+
+                for date in check:
+                    db_dict[date[2]] = datesExpand.expand_dates(f'{date[0]}-{date[1]}')
+                print(db_dict)
 
                 # WARNING: intersections are determined from old entry !!!
 
@@ -165,10 +172,20 @@ class CalendarSave(QThread):
                     elif (start_date not in dates) and (end_date in dates):
                         rear_intersection.append(date)
 
-                    else:
-                        overlaying_intersections = True # TODO: need to separate from lead
+                if c > 0:
+                    print("its over")
+                    dates = datesExpand.expand_dates(f'{start_date}-{end_date}')
+                    for date in dates:
+                        cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ?",
+                                       (date,))
+                        connect.commit()
 
-                if lead_intersection:
+                    cursor.execute(
+                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
+                        (key, start_date, end_date, notes))
+                    connect.commit()
+
+                elif lead_intersection:
                     print("its lead")
                     new_start_month, new_start_day = start_date.split(':')
                     new_start_date = f'{new_start_month}:{int(new_start_day) - 1}'
@@ -199,6 +216,7 @@ class CalendarSave(QThread):
                     connect.commit()
 
                 elif overlaying_intersections:
+                    print("its over")
                     dates = datesExpand.expand_dates(f'{start_date}-{end_date}')
                     for date in dates:
                         cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ?",
