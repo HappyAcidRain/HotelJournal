@@ -27,7 +27,7 @@ class CalendarPage(QMainWindow, calendarUI.Ui_MainWindow, QDialog,
         self.btn_save.clicked.connect(self.save)
 
         self.readThread = saveAndLoad.CalendarRead()
-        self.readThread.s_data.connect(self.write)
+        self.readThread.w_data.connect(self.write)
 
         self.saveThread = saveAndLoad.CalendarSave()
         self.saveThread.s_data.connect(self.saving_dialog)
@@ -118,7 +118,7 @@ class CalendarPage(QMainWindow, calendarUI.Ui_MainWindow, QDialog,
     def write(self, row, column, red, green, blue, notes):
         self.tw_table.setItem(row, column, QTableWidgetItem())
         if self.tw_table.item(row, column) is None:
-            return
+            return    # TODO: raise a error
 
         if red is not None:
             self.tw_table.item(row, column).setBackground(QtGui.QColor(red, green, blue))

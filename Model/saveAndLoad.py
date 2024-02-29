@@ -15,7 +15,7 @@ def string_cleaner(str_temp) -> str:
 
 class CalendarRead(QThread):
     # row, column, color(r, g, b), note
-    s_data = QtCore.pyqtSignal(int, int, int, int, int, str)
+    w_data = QtCore.pyqtSignal(int, int, int, int, int, str)
     s_tables = QtCore.pyqtSignal(list)
 
     def __init__(self):
@@ -71,20 +71,10 @@ class CalendarRead(QThread):
                 blue = int(color[2])
 
             if start_date is not None and end_date is not None:
-
-                start_month, start_day = start_date.split(":")
-                end_month, end_day = end_date.split(":")
-
-                start = f"{start_month}:{start_day}"
-                end = f"{end_month}:{start_day}"
-
-                dates_list = datesExpand.expand_dates(f"{start}-{end}")
-
+                dates_list = datesExpand.expand_dates(f"{start_date}-{end_date}")
                 for date in dates_list:
                     column, row = date.split(':')
-                    print(row, column, red, green, blue, notes)
-
-                    self.s_data.emit(row, column, red, green, blue, notes)  # TODO: resolve why it not writing data
+                    self.w_data.emit(int(column) - 1, int(row) - 1, red, green, blue, notes)
 
         connect.close()
 
@@ -141,100 +131,28 @@ class CalendarSave(QThread):
 
             cursor.execute(f"SELECT color FROM {self.tableName} WHERE color = ?", (key,))
             check = cursor.fetchone()
-            c = 0
 
             if check is None:
                 cursor.execute(f"""SELECT startDate, endDate, color FROM {self.tableName} """)
                 check = cursor.fetchall()
 
-                new_write = []
-                lead_intersection = []
-                rear_intersection = []
-                overlaying_intersections = False
-
-                db_dict = {}
-
-                for date in check:
-                    db_dict[date[2]] = datesExpand.expand_dates(f'{date[0]}-{date[1]}')
-                print(db_dict)
-
-                # WARNING: intersections are determined from old entry !!!
+                intersection = False
 
                 for date in check:
                     dates = datesExpand.expand_dates(f'{date[0]}-{date[1]}')
 
-                    if (start_date not in dates) and (end_date not in dates):
-                        new_write.append(date)
+                    if (start_date in dates) or (end_date in dates):
+                        intersection = True
 
-                    elif (start_date in dates) and (end_date not in dates):
-                        lead_intersection.append(date)
+                if intersection:
+                    print("intersection detected, alarm")
+                    self.s_data.emit('intersection_alr')
 
-                    elif (start_date not in dates) and (end_date in dates):
-                        rear_intersection.append(date)
-
-                if c > 0:
-                    print("its over")
-                    dates = datesExpand.expand_dates(f'{start_date}-{end_date}')
-                    for date in dates:
-                        cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ?",
-                                       (date,))
-                        connect.commit()
-
+                else:
                     cursor.execute(
                         f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
                         (key, start_date, end_date, notes))
                     connect.commit()
-
-                elif lead_intersection:
-                    print("its lead")
-                    new_start_month, new_start_day = start_date.split(':')
-                    new_start_date = f'{new_start_month}:{int(new_start_day) - 1}'
-
-                    cursor.execute(
-                        f"UPDATE {self.tableName} SET endDate = ? WHERE color = ?",
-                        (str(new_start_date), lead_intersection[0][2]))
-                    connect.commit()
-
-                    cursor.execute(
-                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
-                        (key, start_date, end_date, notes))
-                    connect.commit()
-
-                elif rear_intersection:
-                    print("its rear")
-                    new_end_month, new_end_day = end_date.split(':')
-                    new_end_date = f'{new_end_month}:{int(new_end_day) + 1}'
-
-                    cursor.execute(
-                        f"UPDATE {self.tableName} SET startDate = ? WHERE color = ?",
-                        (str(new_end_date), rear_intersection[0][2]))
-                    connect.commit()
-
-                    cursor.execute(
-                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
-                        (key, start_date, end_date, notes))
-                    connect.commit()
-
-                elif overlaying_intersections:
-                    print("its over")
-                    dates = datesExpand.expand_dates(f'{start_date}-{end_date}')
-                    for date in dates:
-                        cursor.execute(f"DELETE FROM {self.tableName} WHERE startDate = ?",
-                                       (date,))
-                        connect.commit()
-
-                    cursor.execute(
-                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
-                        (key, start_date, end_date, notes))
-                    connect.commit()
-
-                elif new_write:
-                    print("its new")
-                    cursor.execute(
-                        f"INSERT INTO {self.tableName}(color, startDate, endDate, notes) VALUES(?, ?, ?, ?)",
-                        (key, start_date, end_date, notes))
-                    connect.commit()
-
 
             else:
                 self.s_data.emit('alr')
@@ -315,6 +233,7 @@ class TableSave(QThread):
 
 class TableRead(QThread):
     s_data = QtCore.pyqtSignal(int, int, str)
+    w_data = QtCore.pyqtSignal(str, str, str, str, str)
 
     def __init__(self):
         QtCore.QThread.__init__(self)
@@ -331,52 +250,21 @@ class TableRead(QThread):
         connect = sqlite3.connect("Model/Database/people.db")
         cursor = connect.cursor()
 
-        cursor.execute(f"""SELECT month FROM {self.tableName} WHERE color = '{color}'""")
-        db_month = cursor.fetchall()
-        db_month.sort()
+        cursor.execute(f"""SELECT startDate, endDate FROM {self.tableName}""")
+        dates = cursor.fetchall()
 
-        index = 0
-        for item in db_month:
+        if dates is not None:
+            for date in dates:
+                start_date = date[0]
+                end_date = date[1]
+                min_month, min_day = start_date.split(':')
+                max_month, max_day = end_date.split(':')
+                days_count = len(datesExpand.expand_dates(f"{start_date}-{end_date}")) - 1
 
-            month_temp = ""
-            for i in item:
-                month_temp += str(i)
-            month = int(month_temp)
-
-            db_month[index] = month
-            index += 1
-
-        db_month = list(dict.fromkeys(db_month))
-
-        day_list = []
-
-        for month in db_month:
-            cursor.execute(f"""SELECT day FROM {self.tableName} WHERE month = {month} AND color = '{color}'""")
-            db_day = cursor.fetchall()
-
-            index = 0
-            for item in db_day:
-
-                day_temp = ""
-                for i in item:
-                    day_temp += str(i)
-                day = int(day_temp) + 1
-
-                db_day[index] = day
-                index += 1
-
-            day_list.append(db_day)
-
-        min_day = day_list[0][0]  # FIX: IndexError: list index out of range
-        max_day = day_list[-1][-1]
-
-        min_month = db_month[0] + 1
-        max_month = db_month[-1] + 1
-
-        return min_day, min_month, max_day, max_month
+                self.w_data.emit(min_day, min_month, max_day, max_month, str(days_count))
 
     def run(self):
-        def standard_read(name_in_db, row, column):
+        def read(name_in_db, row, column):
             cursor.execute(f"SELECT {name_in_db} FROM {self.tableName} WHERE date = ?", (self.date,))
             db_data = cursor.fetchone()
 
@@ -398,27 +286,27 @@ class TableRead(QThread):
                             self.date = cell.text()
 
                         case 2:
-                            standard_read('price', row, column)
+                            read('price', row, column)
 
                         case 3:
-                            standard_read('sum', row, column)
+                            read('sum', row, column)
 
                         case 4:
-                            standard_read('rent', row, column)
+                            read('rent', row, column)
 
                         case 5:
-                            standard_read('guest', row, column)
+                            read('guest', row, column)
 
                         case 6:
-                            standard_read('avito', row, column)
+                            read('avito', row, column)
 
                         case 7:
-                            standard_read('expense', row, column)
+                            read('expense', row, column)
 
                         case 8:
-                            standard_read('indications', row, column)
+                            read('indications', row, column)
 
                         case 9:
-                            standard_read('income', row, column)
+                            read('income', row, column)
 
         connect.close()

@@ -24,6 +24,7 @@ class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
         self.reportRead = saveAndLoad.TableRead()
         self.reportRead.finished.connect(lambda: self.reportSum.start())
         self.reportRead.s_data.connect(self.write)
+        self.reportRead.w_data.connect(self.write_dates_and_days)
 
     def start(self):
         self.reportSum.set(self.tw_reportTable)
@@ -33,14 +34,13 @@ class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
         self.table_name = table_name
         self.calTable = cal_table
 
+        self.reportRead.set(table_name, cal_table)
         self.set_table()
-        self.insert_dates_and_days()
+        self.reportRead.insert_dates()
         self.set_sum_row()
         self.read()
 
-    def insert_dates_and_days(self):
-        min_day, min_month, max_day, max_month = self.reportRead.insert_dates()
-
+    def write_dates_and_days(self, min_day, min_month, max_day, max_month, days_count):
         if self.tw_reportTable.rowCount() - 1 == 1:
             self.tw_reportTable.setRowCount(3)
 
@@ -51,17 +51,7 @@ class ReportPage(QMainWindow, tableUI.Ui_MainWindow, QDate):
         text = f"{min_day}.{min_month} - {max_day}.{max_month}"
 
         self.write(row, 0, text)
-
-        # insert days in table
-        cur_year = QDate().currentDate().year()
-        min_date = QDate(cur_year, min_month, min_day)
-        max_date = QDate(cur_year, max_month, max_day)
-        days = str(max_date.dayOfYear() - min_date.dayOfYear())
-
-        if days == '0':
-            self.write(row, 1, '1')
-        else:
-            self.write(row, 1, days)
+        self.write(row, 1, days_count)
 
     def save(self):
         self.saveDialog.set_range(self.tw_reportTable.rowCount() * self.tw_reportTable.columnCount())
